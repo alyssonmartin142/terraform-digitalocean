@@ -1,0 +1,10 @@
+- become: yes
+  hosts: all
+  name: k8s-worker-install
+  tasks:
+    - name: Enviar arquivo para o join do worker
+      copy:
+        dest: /root/
+        src: ./kubadm-join.sh
+    - name: Executar script join
+      shell: bash /root/kubadm-join.sh

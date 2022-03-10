@@ -1,0 +1,30 @@
+- become: yes
+  hosts: all
+  name: k8s-install
+  tasks:
+    - name: "Install required system packages"
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+        name: ["apt-transport-https", "ca-certificates", "curl", "gnupg2", "lsb-release"]
+        state: latest
+    - name: Install docker
+      shell: curl -fsSL https://get.docker.com | bash
+    - copy:
+        src: daemon.json
+        dest: /etc/docker/daemon.json
+    - name: Create service docker
+      shell: mkdir -p /etc/systemd/system/docker.service.d
+    - name: Reload service docker and daemon
+      shell: systemctl daemon-reload && systemctl restart docker
+    - name: "Add kubernetes GPG apt Key"
+      apt_key:
+        url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+        state: present
+    - name: Install kubernetes
+      shell: echo "deb http://apt.kubernetes.io/ kubernetes-xenial main" > /etc/apt/sources.list.d/kubernetes.list
+    - name: "Install kubelet kubeadm kubectl"
+      apt:
+        update_cache: yes
+        name: ["kubelet", "kubeadm", "kubectl"]
+        state: latest
